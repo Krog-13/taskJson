@@ -37,15 +37,17 @@ class CheckValid:
                 events[path] = json.load(file)
         return events
 
-    def main(self, schema, event, evFile):
+    def main(self, schema, event, evFile, schFile):
         """checking files by schemes
             writes logs with errors"""
         eventData = event['data'] # data for verification
         try:
             validate(instance=eventData, schema=schema)
         except jsonschema.exceptions.ValidationError as err:
-            message = 'Файл {0} не валидный имее ошибку {1}'.format(evFile, err.message)
+            message = 'Файл {0} не валидный имее ошибку, необходимо посмотреть следущее утвеждение {1}'.format(evFile, err.message)
             logging.error(message)
+        except jsonschema.exceptions.SchemaError as err:
+            print('Ошибка в Json-схема {} убедитесь в следующем выражении'.format(shcFile), err.message)
         logging.info('Файл {} исправный'.format(evFile))
 
 
@@ -63,9 +65,9 @@ if __name__ == '__main__':
         for evFile, event in events.items():
             if event:
                 if shcFile.startswith(event['event'][:3]):
-                    verification.main(schema, event, evFile)
+                    verification.main(schema, event, evFile, shcFile)
             else:
-                logging.error('is not validations!!!{}'.format(evFile))
+                logging.error('Битый файл {}'.format(evFile))
 
 
 
